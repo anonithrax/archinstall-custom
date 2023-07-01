@@ -1,6 +1,5 @@
 Here's a simple and detailed template for a README.md file for your project:
 
-```markdown
 # Arch Linux Automated Installation Script
 
 This project consists of two scripts that automate the installation of Arch Linux. This can be particularly useful if you frequently install Arch Linux and would like to reduce the amount of manual work involved.
@@ -50,7 +49,6 @@ Running these scripts will make significant changes to the selected hard drive, 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
-```
 
 Remember to replace the URL in the `git clone` command with the URL of your actual repository.
 
