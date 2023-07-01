@@ -1,5 +1,3 @@
-Here's a simple and detailed template for a README.md file for your project:
-
 # Arch Linux Automated Installation Script
 
 This project consists of two scripts that automate the installation of Arch Linux. This can be particularly useful if you frequently install Arch Linux and would like to reduce the amount of manual work involved.
