@@ -3,22 +3,34 @@ import archinstall
 # Ask the user for the hard drive
 selected_drive = archinstall.select_disk(archinstall.all_disks())
 
-# Set the partition sizes
-boot_partition_size = selected_drive.size // 100  # 1% of total size
-root_partition_size = selected_drive.size // 2  # 50% of total size
-home_partition_size = selected_drive.size - boot_partition_size - root_partition_size  # remaining size
+# Make sure the device is not mounted and has no partitions
+archinstall.sys_command(f'umount -R /mnt', hide_output=False)
+archinstall.sys_command(f'parted -s {selected_drive} mklabel gpt', hide_output=False)
 
-# Define the filesystem layout
-filesystem_layout = {
-    "mountpoints": {
-        "/": {"size": root_partition_size, "filesystem": "ext4"},
-        "/home": {"size": home_partition_size, "filesystem": "ext4"},
-        "/boot": {"size": boot_partition_size, "filesystem": "vfat"},
-    }
-}
+# Partition the drive
+# 512MB for the EFI partition, 30GB for the root partition, and the rest for home
+archinstall.sys_command(f'parted -s {selected_drive} mkpart ESP fat32 1MiB 513MiB', hide_output=False)
+archinstall.sys_command(f'parted -s {selected_drive} set 1 esp on', hide_output=False)
+archinstall.sys_command(f'parted -s {selected_drive} mkpart primary ext4 513MiB 30.5GiB', hide_output=False)
+archinstall.sys_command(f'parted -s {selected_drive} mkpart primary ext4 30.5GiB 100%', hide_output=False)
+
+# Format the partitions
+archinstall.sys_command(f'mkfs.fat -F32 {selected_drive}1', hide_output=False)
+archinstall.sys_command(f'mkfs.ext4 {selected_drive}2', hide_output=False)
+archinstall.sys_command(f'mkfs.ext4 {selected_drive}3', hide_output=False)
+
+# Mount the partitions
+archinstall.sys_command(f'mount {selected_drive}2 /mnt', hide_output=False)
+archinstall.sys_command(f'mkdir -p /mnt/boot', hide_output=False)
+archinstall.sys_command(f'mount {selected_drive}1 /mnt/boot', hide_output=False)
+archinstall.sys_command(f'mkdir -p /mnt/home', hide_output=False)
+archinstall.sys_command(f'mount {selected_drive}3 /mnt/home', hide_output=False)
 
 # Start the installation process
-with archinstall.Installer(selected_drive, archinstall.Layout(filesystem_layout)) as installation:
+with archinstall.Filesystem(selected_drive, '/mnt') as fs:
+    fs.load_os_profiles()
+    installation = archinstall.Installer(fs)
+
     # Set hostname
     installation.set_hostname('anondeskvm')
 
